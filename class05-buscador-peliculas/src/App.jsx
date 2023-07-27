@@ -4,34 +4,39 @@ import { Movies } from './components/Movies.jsx';
 import { useState } from 'react';
 import { useEffect } from 'react';
 
-function App() {
-  const { movies: mappedMovies } = useMovies();
-  const [query, setQuery] = useState('');
+function useSearch() {
+  const [search, updateSearch] = useState('');
   const [error, setError] = useState(null);
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    console.log({ query });
-  };
-
-  const handleChange = (event) => {
-    const newQuery = event.target.value;
-    if (newQuery.startsWith(' ')) return;
-    setQuery(event.target.value);
-
-    if (newQuery === '') {
+  useEffect(() => {
+    if (search === '') {
       setError('No se puede buscar una pelicula vacia');
       return;
     }
-    if (newQuery.match(/\d+$/)) {
+    if (search.match(/\d+$/)) {
       setError('No se puede buscar una pelicula con un numero');
       return;
     }
-    if (newQuery.length < 3) {
+    if (search.length < 3) {
       setError('La busqueda debe tener al menos 3 caracteres');
       return;
     }
     setError(null);
+  }, [search]);
+  return { search, updateSearch, error };
+}
+
+function App() {
+  const { movies: mappedMovies } = useMovies();
+  const { search, updateSearch, error } = useSearch();
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    console.log({ search });
+  };
+
+  const handleChange = (event) => {
+    updateSearch(event.target.value);
   };
 
   return (
@@ -41,7 +46,7 @@ function App() {
         <form className='form' onSubmit={handleSubmit}>
           <input
             onChange={handleChange}
-            value={query}
+            value={search}
             name='query'
             type='text'
             placeholder='Avenges,Star Wars, The Matrix'
